@@ -124,7 +124,7 @@ public class HalfMapValidation {
 			if (eachField.getKey().getX() == width - 1 && eachField.getValue() == EMyTerrain.WATER) {
 				countWaterRightBorder++;
 			}
-			if (eachField.getKey().getX() == height - 1 && eachField.getValue() == EMyTerrain.WATER) {
+			if (eachField.getKey().getY() == height - 1 && eachField.getValue() == EMyTerrain.WATER) {
 				countWaterBottomBorder++;
 			}
 		}
