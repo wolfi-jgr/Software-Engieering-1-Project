@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Build-Timestamp: 2023-12-07T04:06:20.421+0100
+Created-By: Gradle 7.6
+Build-Jdk: 17.0.8.1 (Eclipse Adoptium 17.0.8.1+1)
+Built-By: Admin
+Build-OS: Windows 10 amd64 10.0
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: client.main.MainClient
+Spring-Boot-Version: 2.7.8
+Spring-Boot-Classes: BOOT-INF/classes/
+Spring-Boot-Lib: BOOT-INF/lib/
+Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+Spring-Boot-Layers-Index: BOOT-INF/layers.idx
+
