@@ -85,7 +85,6 @@ public class ServerEndpoints {
 
 		Game currentGame = controller.createNewGame();
 
-		// System.out.println(gameContent.getGameID());
 		UniqueGameIdentifier gameIdentifier = new UniqueGameIdentifier(currentGame.getGameID());
 		return gameIdentifier;
 
@@ -98,18 +97,14 @@ public class ServerEndpoints {
 	public @ResponseBody ResponseEnvelope<UniquePlayerIdentifier> registerPlayer(
 			@Validated @PathVariable UniqueGameIdentifier gameID,
 			@Validated @RequestBody PlayerRegistration playerRegistration) {
-//		System.out.println("testclient: " + gameID.toString() + " myServer: " + gameContent.getGameID());
-		// logger.debug("testclient: " + gameID.toString() + "myServer:" +
-		// gameContent.getGameID());
 
 		controller.handlePlayersRequest(gameID);
-		//controller.checkGameID(gameID);
 		
 		UniquePlayerIdentifier newPlayerID = new UniquePlayerIdentifier(UUID.randomUUID().toString());
 		controller.addPlayer(gameID, newPlayerID.getUniquePlayerID());
-
-		ResponseEnvelope<UniquePlayerIdentifier> playerIDMessage = new ResponseEnvelope<>(newPlayerID);
-		return playerIDMessage;
+		
+		ResponseEnvelope<UniquePlayerIdentifier> playersResponse = new ResponseEnvelope<>(newPlayerID);
+		return playersResponse;
 
 	}
 
@@ -117,10 +112,9 @@ public class ServerEndpoints {
 	public @ResponseBody ResponseEnvelope<ERequestState> getHalfMap(
 			@Validated @PathVariable UniqueGameIdentifier gameID, @Validated @RequestBody PlayerHalfMap playerHalfMap) {
 		
-		controller.handleHalfMapRequest(gameID, playerHalfMap.getUniquePlayerID());
-
-		ResponseEnvelope<ERequestState> playerIDMessage = new ResponseEnvelope<>(ERequestState.Okay);
-		return playerIDMessage;
+		controller.handleHalfMapRequest(gameID, playerHalfMap);
+		ResponseEnvelope<ERequestState> halfMapResponse = new ResponseEnvelope<>(ERequestState.Okay);
+		return halfMapResponse;
 
 	}
 
@@ -128,9 +122,12 @@ public class ServerEndpoints {
 	public @ResponseBody ResponseEnvelope<GameState> getGameState(@Validated @PathVariable UniqueGameIdentifier gameID,
 			@Validated @PathVariable UniquePlayerIdentifier playerID) {
 		
-		controller.handleStateRequest(gameID, playerID.getUniquePlayerID());
+		
+		GameState gameState = new GameState();
+		gameState = controller.handleStateRequest(gameID, playerID.getUniquePlayerID());
 
-		return null;
+		ResponseEnvelope<GameState> gameStateResponse = new ResponseEnvelope<>(gameState);
+		return gameStateResponse;
 
 	}
 

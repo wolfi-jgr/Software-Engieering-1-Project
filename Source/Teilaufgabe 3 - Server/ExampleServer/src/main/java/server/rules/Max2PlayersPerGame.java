@@ -16,8 +16,8 @@ public class Max2PlayersPerGame implements IRule{
 	@Override
 	public void validatePlayerRegistration(Set<Player> players) {
 		
-		if(players.size() != 2) {
-			throw new GenericExampleException("errorname", "errormessage");
+		if(players.size() == 2) {
+			throw new GenericExampleException("Already2PlayersRegistered", "there are already 2 players registered for this game");
 		}
 		
 		
