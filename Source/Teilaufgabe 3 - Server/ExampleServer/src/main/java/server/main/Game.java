@@ -2,8 +2,8 @@ package server.main;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -41,7 +41,6 @@ public class Game {
 			char randomChar = (char) (rand.nextInt(26) + 97);
 			randomGameID += randomChar;
 		}
-
 		return randomGameID;
 	}
 
@@ -64,7 +63,6 @@ public class Game {
 			playerToAct.setPlayerState(EPlayerGameState.MustAct);
 			return;
 		}
-
 		for (Player eachPlayer : getPlayers()) {
 			if (!playerToAct.equals(eachPlayer)) {
 				playerToAct.setPlayerState(EPlayerGameState.MustWait);
@@ -73,13 +71,10 @@ public class Game {
 				return;
 			}
 		}
-
 	}
 
 	public void setHasChanged(boolean changed) {
-
 		data.setHasChanged(changed);
-
 	}
 
 	public boolean hasChanged() {
@@ -103,13 +98,11 @@ public class Game {
 		return data.getPlayers();
 	}
 
-	public FullMap getFullMap() {
-
-		return data.getFullMap(); //////////////////////
+	public FullMap getFullMap(String playerID) {
+		return data.getFullMap(playerID);
 	}
 
 	public String getGameStateID() {
-
 		return data.getGameStateID();
 	}
 
@@ -119,97 +112,119 @@ public class Game {
 
 	public int getHalfMapCount() {
 		return data.getHalfMapCount();
-
 	}
 
 	public void mergeHalfMaps() {
-		FullMap fullMap = new FullMap();
 		Random random = new Random();
-		if (random.nextBoolean()) {
-			fullMap = mergeToSquareMap(data.getHalfMaps());
-		} else {
-			fullMap = mergeToLongMap(data.getHalfMaps());
+		boolean square = random.nextBoolean();
+
+		for (Player eachPlayer : getPlayers()) {
+			if (square) {
+				setFullMap(mergeToSquareMap(data.getHalfMaps(), eachPlayer.getPlayerID()), eachPlayer.getPlayerID());
+			} else {
+				setFullMap(mergeToLongMap(data.getHalfMaps(), eachPlayer.getPlayerID()), eachPlayer.getPlayerID());
+			}
 		}
+	}
 
-		//// merge
-
-		saveFullMap(fullMap);
+	private void setFullMap(FullMap fullMap, String playerID) {
+		data.setFullMap(fullMap, playerID);
 
 	}
 
-	private FullMap mergeToLongMap(Map<String, PlayerHalfMap> halfMaps) {
+	private FullMap mergeToSquareMap(Map<String, PlayerHalfMap> halfMaps, String playerID) {
+		return mergeMap(halfMaps, playerID, false);
+	}
 
-		ArrayList<FullMap> fullMaps = getFullMapFromHalfMapNodes(halfMaps);
+	private FullMap mergeMap(Map<String, PlayerHalfMap> halfMaps, String playerID, boolean isLongMap) {
+		Map<String, FullMap> fullMaps = getFullMapFromHalfMapNodes(halfMaps, playerID);
 
 		if (fullMaps != null) {
-			//System.out.println(fullMaps.size());
-			return fullMaps.get(0);
+			ArrayList<FullMapNode> listOfFullMapNodes = new ArrayList<FullMapNode>();
+			boolean skipFirst = true;
+
+			for (Entry<String, FullMap> eachFullMap : fullMaps.entrySet()) {
+				if (skipFirst) {
+					listOfFullMapNodes.addAll(eachFullMap.getValue().getMapNodes());
+					skipFirst = false;
+				} else {
+					for (FullMapNode eachFullMapNode : eachFullMap.getValue().getMapNodes()) {
+						if (isLongMap) {
+							listOfFullMapNodes.add(new FullMapNode(eachFullMapNode.getTerrain(),
+									eachFullMapNode.getPlayerPositionState(), eachFullMapNode.getTreasureState(),
+									eachFullMapNode.getFortState(), eachFullMapNode.getX() + MAX_HALFMAP_WIDTH,
+									eachFullMapNode.getY()));
+						} else {
+							listOfFullMapNodes.add(new FullMapNode(eachFullMapNode.getTerrain(),
+									eachFullMapNode.getPlayerPositionState(), eachFullMapNode.getTreasureState(),
+									eachFullMapNode.getFortState(), eachFullMapNode.getX(),
+									eachFullMapNode.getY() + MAX_HALFMAP_HEIGHT));
+						}
+					}
+				}
+			}
+			return new FullMap(listOfFullMapNodes);
 
 		} else {
 			return new FullMap();
-
 		}
-
 	}
 
-	private ArrayList<FullMap> getFullMapFromHalfMapNodes(Map<String, PlayerHalfMap> halfMaps) {
+	private FullMap mergeToLongMap(Map<String, PlayerHalfMap> halfMaps, String playerID) {
+		return mergeMap(halfMaps, playerID, true);
+	}
 
+	private Map<String, FullMap> getFullMapFromHalfMapNodes(Map<String, PlayerHalfMap> halfMaps, String playerID) {
 		if (halfMaps == null) {
 			throw new GenericExampleException("halfMapsNullException",
 					"halfMaps were null when trying to convert them into FullMap");
 		}
 
-		ArrayList<FullMap> listToReturn = new ArrayList<FullMap>();
+		Map<String, FullMap> mapToReturn = new HashMap<String, FullMap>();
+		boolean hasToPutEnemyPlayer = true;
+		for (Entry<String, PlayerHalfMap> eachPlayerHalfMap : halfMaps.entrySet()) {
 
-		for (PlayerHalfMap eachPlayerHalfMap : halfMaps.values()) {
 			ArrayList<FullMapNode> fullMapNodes = new ArrayList<FullMapNode>();
-			for (int x = 0; x < MAX_HALFMAP_WIDTH; x++) {
-				for (int y = 0; y < MAX_HALFMAP_HEIGHT; y++) {
+			Player eachPlayer = getPlayer(eachPlayerHalfMap.getValue().getUniquePlayerID());
 
-					// System.out.println(x + " " + y);
+			for (PlayerHalfMapNode eachHalfMapNode : eachPlayerHalfMap.getValue().getMapNodes()) {
+				boolean isFort = eachHalfMapNode.isFortPresent();
 
-					for (PlayerHalfMapNode eachHalfMapNode : eachPlayerHalfMap.getMapNodes()) {
-						if (x == eachHalfMapNode.getX() && y == eachHalfMapNode.getY()) {
-							boolean isFort = eachHalfMapNode.isFortPresent();
-							if (isFort) {
-								fullMapNodes.add(new FullMapNode(eachHalfMapNode.getTerrain(),
-										EPlayerPositionState.MyPlayerPosition, ETreasureState.NoOrUnknownTreasureState,
-										EFortState.MyFortPresent, eachHalfMapNode.getX(), eachHalfMapNode.getY()));
-							} else {
-								fullMapNodes.add(new FullMapNode(eachHalfMapNode.getTerrain(),
-										EPlayerPositionState.NoPlayerPresent, ETreasureState.NoOrUnknownTreasureState,
-										EFortState.NoOrUnknownFortState, eachHalfMapNode.getX(),
-										eachHalfMapNode.getY()));
-							}
-						}
+				if (isFort && eachPlayerHalfMap.getKey().equals(playerID)) {
+					fullMapNodes.add(new FullMapNode(eachHalfMapNode.getTerrain(),
+							EPlayerPositionState.MyPlayerPosition, ETreasureState.NoOrUnknownTreasureState,
+							EFortState.MyFortPresent, eachHalfMapNode.getX(), eachHalfMapNode.getY()));
+				} else {
+					if (eachHalfMapNode.getTerrain() == ETerrain.Grass && hasToPutEnemyPlayer) {
+						fullMapNodes.add(new FullMapNode(eachHalfMapNode.getTerrain(),
+								EPlayerPositionState.EnemyPlayerPosition, ETreasureState.NoOrUnknownTreasureState,
+								EFortState.NoOrUnknownFortState, eachHalfMapNode.getX(), eachHalfMapNode.getY()));
+						hasToPutEnemyPlayer = false;
+					} else {
+						fullMapNodes.add(new FullMapNode(eachHalfMapNode.getTerrain(),
+								EPlayerPositionState.NoPlayerPresent, ETreasureState.NoOrUnknownTreasureState,
+								EFortState.NoOrUnknownFortState, eachHalfMapNode.getX(), eachHalfMapNode.getY()));
+
 					}
-
 				}
 			}
-			listToReturn.add(new FullMap(fullMapNodes));
 
-			///////////////////////////////////////////////////////////////
-			break;
-///////////////////////////////////////////////////////////////
+			FullMap convertedHalfMap = new FullMap(fullMapNodes);
+			mapToReturn.put(eachPlayer.getPlayerID(), convertedHalfMap);
+			eachPlayer.setConvertedHalfMap(convertedHalfMap);
 		}
-		return listToReturn;
+		return mapToReturn;
 	}
 
-	private FullMap mergeToSquareMap(Map<String, PlayerHalfMap> halfMaps) {
-		ArrayList<FullMap> fullMaps = getFullMapFromHalfMapNodes(halfMaps);
-		if (fullMaps != null) {
-//			System.out.println(fullMaps.size());
-			return fullMaps.get(0);
+	private Player getPlayer(String uniquePlayerID) {
 
-		} else {
-			return new FullMap();
-
+		for (Player eachPlayer : getPlayers()) {
+			if (eachPlayer.getPlayerID().equals(uniquePlayerID)) {
+				return eachPlayer;
+			}
 		}
-	}
-
-	private void saveFullMap(FullMap fullMap) {
-
-		data.saveFullMap(fullMap);
+		throw new GenericExampleException("PlayerNotFound",
+				"the player with playerID: " + uniquePlayerID + " was not found.");
 	}
 
 	public GameState getGameState() {
