@@ -1,6 +1,5 @@
 package server.main;
 
-import messagesbase.UniquePlayerIdentifier;
 import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.EPlayerGameState;
 
@@ -10,13 +9,15 @@ public class Player {
 	private PlayerRegistration playerRegistration = new PlayerRegistration();
 	private String playerID = "";
 	private boolean sentMaptoServer = false;
-	private long playerTime = 0; 
+//	private long playerTime = 0;
+	private boolean sentHalfMapFlag = false; 
 	
 	
-	public Player(String uniquePlayerID) {
+	public Player(String uniquePlayerID, PlayerRegistration playerRegistration) {
 		
 		this.playerID = uniquePlayerID;
-		this.playerTime = System.currentTimeMillis();
+		this.playerRegistration = playerRegistration;
+//		this.playerTime = System.currentTimeMillis();
 		
 	}
 
@@ -48,8 +49,16 @@ public class Player {
 
 
 	public PlayerRegistration getPlayerRegistration() {
-		// TODO Auto-generated method stub
 		return this.playerRegistration;
+	}
+
+
+	public boolean hasSentMap() {
+		return sentHalfMapFlag;
+	}
+	
+	public void setSentHalfMap() {
+		sentHalfMapFlag = true;
 	}
 
 }

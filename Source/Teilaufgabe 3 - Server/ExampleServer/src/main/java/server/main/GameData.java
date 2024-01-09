@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromserver.FullMap;
+import messagesbase.messagesfromserver.GameState;
 
 public class GameData {
 
@@ -15,12 +17,25 @@ public class GameData {
 	private FullMap fullMap = new FullMap();
 	private Map<String, PlayerHalfMap> halfMaps = new HashMap<String, PlayerHalfMap>();
 
+	private GameState gameState;
+	private String gameStateID = UUID.randomUUID().toString();
+	private boolean changed = false;
+
+	public GameState getGameState() {
+
+		return this.gameState;
+	}
+
+	public void setGameState(GameState gameStateToSet) {
+		this.gameState = gameStateToSet;
+	}
+
 	public Set<Player> getPlayers() {
-		return players;
+		return this.players;
 	}
 
 	public String getGameID() {
-		return gameID;
+		return this.gameID;
 	}
 
 	public void setGameID(String gameID) {
@@ -40,9 +55,42 @@ public class GameData {
 	}
 
 	public void addHalfMap(PlayerHalfMap halfMap) {
-		
+
 		halfMaps.put(halfMap.getUniquePlayerID(), halfMap);
+
+	}
+
+	public int getHalfMapCount() {
+		return this.halfMaps.size();
+
+	}
+
+	public void saveFullMap(FullMap fullMap) {
+		this.fullMap = fullMap;
+	}
+
+	public Map<String, PlayerHalfMap> getHalfMaps() {
+
+		return halfMaps;
+	}
+
+	public String getGameStateID() {
 		
+		return this.gameStateID ;
+	}
+
+	public void setHasChanged(boolean changed) {
+		
+		this.changed  = changed;
+		
+	}
+	
+	public boolean hasChanged() {
+		return changed;
+	}
+
+	public void setGameStateID(String gameStateID) {
+		this.gameStateID = gameStateID;
 	}
 
 }

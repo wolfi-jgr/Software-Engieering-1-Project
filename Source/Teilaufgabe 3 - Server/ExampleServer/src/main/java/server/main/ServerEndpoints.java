@@ -101,7 +101,8 @@ public class ServerEndpoints {
 		controller.handlePlayersRequest(gameID);
 		
 		UniquePlayerIdentifier newPlayerID = new UniquePlayerIdentifier(UUID.randomUUID().toString());
-		controller.addPlayer(gameID, newPlayerID.getUniquePlayerID());
+		
+		controller.addPlayer(gameID, newPlayerID.getUniquePlayerID(), playerRegistration);
 		
 		ResponseEnvelope<UniquePlayerIdentifier> playersResponse = new ResponseEnvelope<>(newPlayerID);
 		return playersResponse;

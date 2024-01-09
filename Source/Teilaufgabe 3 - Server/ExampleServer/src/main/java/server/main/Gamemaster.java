@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import messagesbase.UniqueGameIdentifier;
 import messagesbase.UniquePlayerIdentifier;
 import messagesbase.messagesfromclient.PlayerHalfMap;
-import messagesbase.messagesfromserver.FullMap;
+import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.GameState;
 import messagesbase.messagesfromserver.PlayerState;
 import server.exceptions.GenericExampleException;
@@ -22,7 +21,11 @@ import server.rules.Max2PlayersPerGame;
 public class Gamemaster {
 	private Map<String, Game> games = new HashMap<String, Game>();
 
+	private List<String> listOfGameIDs = new ArrayList<String>();
+
 	private List<IRule> rulesForHalfMap = new ArrayList<IRule>();
+
+	private int MAX_NUMBER_OF_GAMES = 99;
 
 	private void checkGameID(UniqueGameIdentifier gameID) {
 		if (gameID.getUniqueGameID().equals(null) || gameID.equals(new UniqueGameIdentifier())) {
@@ -40,16 +43,27 @@ public class Gamemaster {
 		while (games.containsKey(newGame.getGameID())) {
 			newGame = new Game();
 		}
-		
-//		if(games.size() == MAX_NUMBER_OF_GAMES) {remove() }
+
+		if (games.size() == MAX_NUMBER_OF_GAMES) {
+
+			removeFirstGame();
+		}
 		games.put(newGame.getGameID(), newGame);
+		listOfGameIDs.add(newGame.getGameID());
 		return newGame;
 
 	}
 
-	public void addPlayer(UniqueGameIdentifier gameID, String uniquePlayerID) {
+	private void removeFirstGame() {
+
+		String gameIDOfFirstGame = listOfGameIDs.remove(listOfGameIDs.size() - 1);
+		games.remove(gameIDOfFirstGame);
+
+	}
+
+	public void addPlayer(UniqueGameIdentifier gameID, String uniquePlayerID, PlayerRegistration playerRegistration) {
 		Game gameToAdd = getGame(gameID.getUniqueGameID());
-		gameToAdd.addPlayer(new Player(uniquePlayerID));
+		gameToAdd.addPlayer(new Player(uniquePlayerID, playerRegistration));
 
 		if (gameToAdd.getPlayerCount() == 2) {
 			gameToAdd.setNextPlayerToAct();
@@ -84,10 +98,39 @@ public class Gamemaster {
 		checkGameID(gameID);
 		checkPlayerID(gameID, halfmap.getUniquePlayerID());
 		checkIfBothPlayersRegistered(gameID);
+		checkIfPlayerHasSentMap(gameID, halfmap.getUniquePlayerID());
 		checkHalfMap(rulesForHalfMap);
 		saveHalfMap(gameID, halfmap);// first check because maybe wrong
 
 		setRandomPlayerToActFirst(gameID);
+		checkIfBothPlayersSentHalfMaps(gameID);
+
+	}
+
+	private void checkIfPlayerHasSentMap(UniqueGameIdentifier gameID, String uniquePlayerID) {
+
+		Game gameToCheck = getGame(gameID.getUniqueGameID());
+		for (Player eachPlayer : gameToCheck.getPlayers()) {
+			if (uniquePlayerID.equals(eachPlayer.getPlayerID())) {
+				if (eachPlayer.hasSentMap()) {
+					throw new GenericExampleException("PlayerAlreadySentHalfMap",
+							"the player: " + uniquePlayerID + " has already sent a halfMap.");
+				} else {
+					eachPlayer.setSentHalfMap();
+				}
+
+			}
+		}
+	}
+
+	private void checkIfBothPlayersSentHalfMaps(UniqueGameIdentifier gameID) {
+
+		Game gameToCheck = getGame(gameID.getUniqueGameID());
+
+		if (gameToCheck.getHalfMapCount() == 2) {
+			gameToCheck.mergeHalfMaps();
+
+		}
 
 	}
 
@@ -129,30 +172,50 @@ public class Gamemaster {
 			eachRule.validatePlayerRegistration(gameToHandle.getPlayers());
 		}
 
+		gameToHandle.setHasChanged(true);
+
 	}
 
 	public GameState handleStateRequest(UniqueGameIdentifier gameID, String uniquePlayerID) {
 		checkGameID(gameID);
 		checkPlayerID(gameID, uniquePlayerID);
 		Game gameToHandle = games.get(gameID.getUniqueGameID());
-		GameState gameState = getGameStateFromPlayer(gameToHandle, uniquePlayerID);
+
+		GameState gameState = getGameStateForPlayer(gameToHandle, uniquePlayerID);
 		return gameState;
 	}
 
-	private GameState getGameStateFromPlayer(Game gameOfInterest, String playerID) {
+	private GameState getGameStateForPlayer(Game gameOfInterest, String playerID) {
 		Set<PlayerState> setOfPlayerStates = new HashSet<PlayerState>();
 
 		for (Player eachPlayer : gameOfInterest.getPlayers()) {
-			if (playerID.equals(eachPlayer.getPlayerID())) {
+			if (eachPlayer.getPlayerID().equals(playerID)) {				
 				PlayerState playerState = new PlayerState(eachPlayer.getPlayerRegistration().getStudentFirstName(),
 						eachPlayer.getPlayerRegistration().getStudentLastName(),
 						eachPlayer.getPlayerRegistration().getStudentUAccount(), eachPlayer.getPlayerState(),
-						new UniquePlayerIdentifier(playerID), false);
+						new UniquePlayerIdentifier(eachPlayer.getPlayerID()), false);
 				setOfPlayerStates.add(playerState);
 			}
+			else {
+				PlayerState playerState = new PlayerState(eachPlayer.getPlayerRegistration().getStudentFirstName(),
+						eachPlayer.getPlayerRegistration().getStudentLastName(),
+						eachPlayer.getPlayerRegistration().getStudentUAccount(), eachPlayer.getPlayerState(),
+						new UniquePlayerIdentifier("NOT ALLOWED"), false);
+				setOfPlayerStates.add(playerState);
+			}
+
 		}
 
-		GameState gameState = new GameState(gameOfInterest.getFullMap(), setOfPlayerStates, UUID.randomUUID().toString());
+		String gameStateID = gameOfInterest.getGameStateID();
+		if (gameOfInterest.hasChanged()) {
+
+			gameStateID = UUID.randomUUID().toString();
+			gameOfInterest.setGameStateID(gameStateID);
+			gameOfInterest.setHasChanged(false);
+
+		}
+
+		GameState gameState = new GameState(gameOfInterest.getFullMap(), setOfPlayerStates, gameStateID);
 
 		return gameState;
 	}
