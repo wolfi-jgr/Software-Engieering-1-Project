@@ -1,4 +1,4 @@
-package server.main;
+package server.player;
 
 import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.EPlayerGameState;
@@ -10,7 +10,6 @@ public class Player {
 	private PlayerRegistration playerRegistration = new PlayerRegistration();
 	private String playerID = "";
 	private boolean sentMaptoServer = false;
-//	private long playerTime = 0;
 	private boolean sentHalfMapFlag = false;
 	private FullMap convertedHalfMap = new FullMap();
 	private FullMap fullMap = new FullMap();
@@ -19,7 +18,6 @@ public class Player {
 
 		this.playerID = uniquePlayerID;
 		this.playerRegistration = playerRegistration;
-//		this.playerTime = System.currentTimeMillis();
 
 	}
 
@@ -40,7 +38,7 @@ public class Player {
 	}
 
 	public void setPlayerState(EPlayerGameState state) {
-		playerState = state;
+		this.playerState = state;
 	}
 
 	public PlayerRegistration getPlayerRegistration() {

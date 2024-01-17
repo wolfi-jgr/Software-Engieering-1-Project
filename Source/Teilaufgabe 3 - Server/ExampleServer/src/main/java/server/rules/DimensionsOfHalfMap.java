@@ -4,10 +4,9 @@ import java.util.Set;
 
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import server.eachgame.Game;
-import server.exceptions.GenericExampleException;
 import server.player.Player;
 
-public class HalfMapHas50Fields implements IRule{
+public class DimensionsOfHalfMap implements IRule{
 
 	@Override
 	public void validateNewGame() {
@@ -23,10 +22,7 @@ public class HalfMapHas50Fields implements IRule{
 
 	@Override
 	public void validateHalfMap(PlayerHalfMap playerHalfMap, Game game) {
-		
-		if(playerHalfMap.getMapNodes().size() != 50) {
-			throw new GenericExampleException("HalfMaphasNot50Fields", "the sent HalfMap has not 50 fields.");
-		}
+		final int maxX;
 		
 	}
 
@@ -35,6 +31,5 @@ public class HalfMapHas50Fields implements IRule{
 		// TODO Auto-generated method stub
 		
 	}
-
 
 }

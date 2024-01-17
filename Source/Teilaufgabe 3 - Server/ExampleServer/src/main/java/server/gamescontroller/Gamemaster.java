@@ -1,4 +1,4 @@
-package server.main;
+package server.gamescontroller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,15 +15,19 @@ import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.GameState;
 import messagesbase.messagesfromserver.PlayerState;
+import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
+import server.player.Player;
 import server.rules.HalfMapHas50Fields;
+import server.rules.HalfMapTerrainCount;
 import server.rules.IRule;
 import server.rules.Max2PlayersPerGame;
 
 public class Gamemaster {
 	private Map<String, Game> games = new HashMap<String, Game>();
 	private List<String> listOfGameIDs = new ArrayList<String>();
-	private List<IRule> rulesForHalfMap = new ArrayList<IRule>(Arrays.asList(new HalfMapHas50Fields()));
+	private List<IRule> rulesForHalfMap = new ArrayList<IRule>(Arrays.asList(new HalfMapHas50Fields(), new HalfMapTerrainCount()));
+	private List<IRule> rulesForPlayers = new ArrayList<IRule>(Arrays.asList(new Max2PlayersPerGame()));
 	private int MAX_NUMBER_OF_GAMES = 99;
 
 	private void checkGameID(UniqueGameIdentifier gameID) {
@@ -87,7 +91,7 @@ public class Gamemaster {
 		checkPlayerID(gameID, halfmap.getUniquePlayerID());
 		checkIfBothPlayersRegistered(gameID);
 		checkIfPlayerHasSentMap(gameID, halfmap.getUniquePlayerID());
-		checkHalfMap(halfmap, rulesForHalfMap);
+		checkHalfMap(halfmap, rulesForHalfMap, getGame(gameID.getUniqueGameID()));
 		saveHalfMap(gameID, halfmap);
 
 		setRandomPlayerToActFirst(gameID);
@@ -133,9 +137,9 @@ public class Gamemaster {
 		gameToSave.addHalfMap(halfMap);
 	}
 
-	private void checkHalfMap(PlayerHalfMap halfMap, List<IRule> rules) {
+	private void checkHalfMap(PlayerHalfMap halfMap, List<IRule> rules, Game gameToValidate) {
 		for (IRule ruleToCheck : rules) {
-			ruleToCheck.validateHalfMap(halfMap);
+			ruleToCheck.validateHalfMap(halfMap, gameToValidate);
 		}
 	}
 
@@ -146,15 +150,10 @@ public class Gamemaster {
 		if (gameToHandle == null) {
 			throw new GenericExampleException("NoSuchGameFound", "the game with the id: " + gameID + " was not found.");
 		}
-////////////////////////////
-		Set<IRule> rules = new HashSet<IRule>();
-		rules.add(new Max2PlayersPerGame());
 
-		for (var eachRule : rules) {
+		for (var eachRule : rulesForPlayers) {
 			eachRule.validatePlayerRegistration(gameToHandle.getPlayers());
 		}
-
-		////////////////////////////
 		gameToHandle.setHasChanged(true);
 	}
 

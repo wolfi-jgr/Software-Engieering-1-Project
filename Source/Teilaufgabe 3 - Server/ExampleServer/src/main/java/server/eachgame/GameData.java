@@ -1,4 +1,4 @@
-package server.main;
+package server.eachgame;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +10,7 @@ import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromserver.FullMap;
 import messagesbase.messagesfromserver.GameState;
 import server.exceptions.GenericExampleException;
+import server.player.Player;
 
 public class GameData {
 
@@ -20,6 +21,7 @@ public class GameData {
 	private GameState gameState;
 	private String gameStateID = UUID.randomUUID().toString();
 	private boolean changed = false;
+	private boolean hasGameEnded = false;
 
 	public GameState getGameState() {
 
@@ -94,6 +96,14 @@ public class GameData {
 
 	public void setGameStateID(String gameStateID) {
 		this.gameStateID = gameStateID;
+	}
+
+	public void setEndOfGame() {
+		this.hasGameEnded  = true;
+	}
+	
+	public boolean isGameFinished() {
+		return this.hasGameEnded;
 	}
 
 }

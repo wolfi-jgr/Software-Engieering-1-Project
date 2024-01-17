@@ -3,8 +3,9 @@ package server.rules;
 import java.util.Set;
 
 import messagesbase.messagesfromclient.PlayerHalfMap;
+import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
-import server.main.Player;
+import server.player.Player;
 
 public class Max2PlayersPerGame implements IRule{
 
@@ -25,9 +26,9 @@ public class Max2PlayersPerGame implements IRule{
 	}
 
 	@Override
-	public void validateHalfMap(PlayerHalfMap playerHalfMap) {
+	public void validateHalfMap(PlayerHalfMap playerHalfMap, Game game) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -35,6 +36,7 @@ public class Max2PlayersPerGame implements IRule{
 		// TODO Auto-generated method stub
 		
 	}
+
 
 	
 

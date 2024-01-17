@@ -1,4 +1,4 @@
-package server.main;
+package server.eachgame;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import messagesbase.messagesfromserver.FullMap;
 import messagesbase.messagesfromserver.FullMapNode;
 import messagesbase.messagesfromserver.GameState;
 import server.exceptions.GenericExampleException;
+import server.player.Player;
 
 public class Game {
 
@@ -57,6 +58,10 @@ public class Game {
 	}
 
 	public void setNextPlayerToAct() {
+		if (data.isGameFinished()) {
+			setHasChanged(true);
+			return;
+		}
 		setHasChanged(true);
 		if (playerToAct == null) {
 			playerToAct = chooseRandomPlayer(getPlayers());
@@ -64,6 +69,9 @@ public class Game {
 			return;
 		}
 		for (Player eachPlayer : getPlayers()) {
+			if(isFinished()) {
+				
+			}
 			if (!playerToAct.equals(eachPlayer)) {
 				playerToAct.setPlayerState(EPlayerGameState.MustWait);
 				playerToAct = eachPlayer;
@@ -235,4 +243,22 @@ public class Game {
 		data.setGameStateID(gameStateID);
 	}
 
+	public void setLoser(String uniquePlayerID) {
+		getPlayer(uniquePlayerID).setPlayerState(EPlayerGameState.Lost);
+		getOtherPlayer(uniquePlayerID).setPlayerState(EPlayerGameState.Won);
+		data.setEndOfGame();
+	}
+
+	public Player getOtherPlayer(String uniquePlayerID) {
+		for (Player eachPlayer : getPlayers()) {
+			if (!eachPlayer.getPlayerID().equals(uniquePlayerID)) {
+				return eachPlayer;
+			}
+		}
+		throw new GenericExampleException("PlayerNotFound", "the player was not found");
+	}
+
+	public boolean isFinished() {
+		return data.isGameFinished();
+	}
 }

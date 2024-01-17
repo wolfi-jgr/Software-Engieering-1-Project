@@ -24,7 +24,9 @@ import messagesbase.messagesfromclient.ERequestState;
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.GameState;
+import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
+import server.gamescontroller.Gamemaster;
 
 @RestController
 @RequestMapping(value = "/games")
