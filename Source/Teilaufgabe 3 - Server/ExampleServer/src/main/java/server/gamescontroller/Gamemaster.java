@@ -20,7 +20,6 @@ import messagesbase.messagesfromserver.GameState;
 import messagesbase.messagesfromserver.PlayerState;
 import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
-import server.main.ServerEndpoints;
 import server.player.Player;
 import server.rules.CastleAmountAndLocation;
 import server.rules.CoordinatesWithinBounds;
@@ -47,9 +46,11 @@ public class Gamemaster {
 
 	private void checkGameID(UniqueGameIdentifier gameID) {
 		if (gameID.getUniqueGameID().equals(null) || gameID.equals(new UniqueGameIdentifier())) {
+			logger.error("the given gameID was null or empty.");
 			throw new GenericExampleException("GameIDNullOrEmpty", "the given gameID was null or empty.");
 		}
 		if (games.get(gameID.getUniqueGameID()) == null) {
+			logger.error("the given gameID was not found.");
 			throw new GenericExampleException("GameIDNotFound", "the given gameID was not found.");
 		}
 	}
@@ -64,17 +65,20 @@ public class Gamemaster {
 		}
 		games.put(newGame.getGameID(), newGame);
 		listOfGameIDs.add(newGame.getGameID());
+		logger.debug("new game with gameID: " + newGame.getGameID() + " has been created.");
 		return newGame;
 	}
 
 	private void removeFirstGame() {
 		String gameIDOfFirstGame = listOfGameIDs.remove(0);
+		logger.debug("game with gameID: " + gameIDOfFirstGame + " hhas been removed");
 		games.remove(gameIDOfFirstGame);
 	}
 
 	public void addPlayer(UniqueGameIdentifier gameID, String uniquePlayerID, PlayerRegistration playerRegistration) {
 		Game gameToAdd = getGame(gameID.getUniqueGameID());
 		gameToAdd.addPlayer(new Player(uniquePlayerID, playerRegistration));
+		logger.debug("player: " + uniquePlayerID + " has been added to game: " + gameID.getUniqueGameID());
 
 		if (gameToAdd.getPlayerCount() == 2) {
 			gameToAdd.setNextPlayerToAct();
@@ -85,6 +89,7 @@ public class Gamemaster {
 	private Game getGame(String gameID) {
 		Game gameToReturn = games.get(gameID);
 		if (gameToReturn == null) {
+			logger.error("the given gameID was not found.");
 			throw new GenericExampleException("GameIDNotFound", "the given gameID was not found.");
 		}
 		return gameToReturn;
@@ -97,6 +102,7 @@ public class Gamemaster {
 				return;
 			}
 		}
+		logger.error("the player: " + uniquePlayerID + " in the game with id: " + gameID + " was not found.");
 		throw new GenericExampleException("PlayerNotFound",
 				"the player: " + uniquePlayerID + " in the game with id: " + gameID + " was not found.");
 	}
@@ -106,7 +112,7 @@ public class Gamemaster {
 		checkPlayerID(gameID, halfmap.getUniquePlayerID());
 		checkIfBothPlayersRegistered(gameID);
 		checkIfPlayerHasSentMap(gameID, halfmap.getUniquePlayerID());
-		checkHalfMap(halfmap, rulesForHalfMap, getGame(gameID.getUniqueGameID()));
+		checkHalfMapRules(halfmap, rulesForHalfMap, getGame(gameID.getUniqueGameID()));
 		saveHalfMap(gameID, halfmap);
 
 		getGame(gameID.getUniqueGameID()).setNextPlayerToAct();
@@ -118,6 +124,7 @@ public class Gamemaster {
 		for (Player eachPlayer : gameToCheck.getPlayers()) {
 			if (uniquePlayerID.equals(eachPlayer.getPlayerID())) {
 				if (eachPlayer.hasSentMap()) {
+					logger.error("the player: " + uniquePlayerID + " has already sent a halfMap.");
 					throw new GenericExampleException("PlayerAlreadySentHalfMap",
 							"the player: " + uniquePlayerID + " has already sent a halfMap.");
 				} else {
@@ -130,6 +137,7 @@ public class Gamemaster {
 	private void checkIfBothPlayersSentHalfMaps(UniqueGameIdentifier gameID) {
 		Game gameToCheck = getGame(gameID.getUniqueGameID());
 		if (gameToCheck.bothPlayersSentHalfMaps()) {
+			logger.debug("halfMaps being merged for game: " + gameID.getUniqueGameID());
 			gameToCheck.mergeHalfMaps();
 		}
 	}
@@ -139,6 +147,7 @@ public class Gamemaster {
 		if (gameToCheck.bothPlayersRegistered()) {
 			return;
 		}
+		logger.error("not both players were registered but one client tried to send map.");
 		throw new GenericExampleException("NotBothPlayersRegistered",
 				"not both players were registered but one client tried to send map.");
 	}
@@ -148,7 +157,7 @@ public class Gamemaster {
 		gameToSave.addHalfMap(halfMap);
 	}
 
-	private void checkHalfMap(PlayerHalfMap halfMap, List<IRule> rules, Game gameToValidate) {
+	private void checkHalfMapRules(PlayerHalfMap halfMap, List<IRule> rules, Game gameToValidate) {
 		for (IRule ruleToCheck : rules) {
 			ruleToCheck.validateHalfMap(halfMap, gameToValidate);
 		}
@@ -159,6 +168,7 @@ public class Gamemaster {
 
 		Game gameToHandle = getGame(gameID.getUniqueGameID());
 		if (gameToHandle == null) {
+			logger.error("the game with the id: " + gameID + " was not found.");
 			throw new GenericExampleException("NoSuchGameFound", "the game with the id: " + gameID + " was not found.");
 		}
 

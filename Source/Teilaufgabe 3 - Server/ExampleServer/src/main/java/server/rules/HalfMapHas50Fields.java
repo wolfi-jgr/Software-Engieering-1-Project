@@ -2,12 +2,17 @@ package server.rules;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
+import server.exceptions.HalfMaphasNot50FieldsException;
 import server.player.Player;
 
 public class HalfMapHas50Fields implements IRule{
+	private final static Logger logger = LoggerFactory.getLogger(HalfMapHas50Fields.class);
 
 	@Override
 	public void validateNewGame() {
@@ -25,7 +30,8 @@ public class HalfMapHas50Fields implements IRule{
 	public void validateHalfMap(PlayerHalfMap playerHalfMap, Game game) {
 		
 		if(playerHalfMap.getMapNodes().size() != 50) {
-			throw new GenericExampleException("HalfMaphasNot50Fields", "the sent HalfMap has not 50 fields.");
+			logger.error("");
+			throw new HalfMaphasNot50FieldsException(playerHalfMap);
 		}
 		
 	}

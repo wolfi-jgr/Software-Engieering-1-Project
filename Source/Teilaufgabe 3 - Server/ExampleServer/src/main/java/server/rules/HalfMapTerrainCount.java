@@ -1,8 +1,6 @@
 package server.rules;
 
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromclient.PlayerHalfMapNode;
@@ -18,9 +16,6 @@ public class HalfMapTerrainCount implements IRule {
 	private final int MIN_WATER_COUNT = 7; // 14% from 50 fields
 	
 	
-
-	  private static final Logger logger = LoggerFactory.getLogger(HalfMapTerrainCount.class);
-
 	@Override
 	public void validateNewGame() {
 		// TODO Auto-generated method stub
@@ -57,7 +52,6 @@ public class HalfMapTerrainCount implements IRule {
 						"The terrain in TerrainCountRule was not grass, mountain or water.");
 			}
 		}
-	
 
 		if (grassCount < MIN_GRASS_COUNT) {
 			game.setLoser(playerHalfMap.getUniquePlayerID());

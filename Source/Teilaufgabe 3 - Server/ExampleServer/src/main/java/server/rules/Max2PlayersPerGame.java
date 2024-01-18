@@ -5,7 +5,6 @@ import java.util.Set;
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import server.eachgame.Game;
 import server.exceptions.Already2PlayersRegisteredException;
-import server.exceptions.GenericExampleException;
 import server.player.Player;
 
 public class Max2PlayersPerGame implements IRule{

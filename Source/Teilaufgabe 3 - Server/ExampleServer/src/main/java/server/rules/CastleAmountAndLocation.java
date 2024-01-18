@@ -2,6 +2,9 @@ package server.rules;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromclient.PlayerHalfMapNode;
@@ -10,6 +13,8 @@ import server.exceptions.CastleCountAndOrLocationException;
 import server.player.Player;
 
 public class CastleAmountAndLocation implements IRule {
+	
+	private final static Logger logger = LoggerFactory.getLogger(CastleAmountAndLocation.class);
 
 	@Override
 	public void validateNewGame() {
@@ -39,6 +44,8 @@ public class CastleAmountAndLocation implements IRule {
 		}
 		
 		if(castleCount != 1 || castleOnGrassFieldCount != 1 ) {
+			logger.error("the castleCount is: " + castleCount
+				+ " and should be 1, the castleCountOnGrass is: " + castleOnGrassFieldCount + "but should be 1.");
 			throw new CastleCountAndOrLocationException(castleCount, castleOnGrassFieldCount);
 		}
 	}

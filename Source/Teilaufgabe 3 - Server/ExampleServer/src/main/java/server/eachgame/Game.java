@@ -22,7 +22,6 @@ import messagesbase.messagesfromserver.FullMap;
 import messagesbase.messagesfromserver.FullMapNode;
 import messagesbase.messagesfromserver.GameState;
 import server.exceptions.GenericExampleException;
-import server.main.ServerEndpoints;
 import server.player.Player;
 
 public class Game {
@@ -34,7 +33,7 @@ public class Game {
 
 	private GameData data = new GameData();
 	private Player playerToAct;
-	
+
 	private final static Logger logger = LoggerFactory.getLogger(Game.class);
 
 	public Game() {
@@ -76,8 +75,8 @@ public class Game {
 			return;
 		}
 		for (Player eachPlayer : getPlayers()) {
-			if(isFinished()) {
-				
+			if (isFinished()) {
+
 			}
 			if (!playerToAct.equals(eachPlayer)) {
 				playerToAct.setPlayerState(EPlayerGameState.MustWait);
@@ -238,8 +237,9 @@ public class Game {
 				return eachPlayer;
 			}
 		}
+		logger.error("the player with playerID: " + uniquePlayerID + " was not found in game: " + getGameID());
 		throw new GenericExampleException("PlayerNotFound",
-				"the player with playerID: " + uniquePlayerID + " was not found.");
+				"the player with playerID: " + uniquePlayerID + " was not found in game: " + getGameID());
 	}
 
 	public GameState getGameState() {
@@ -251,8 +251,13 @@ public class Game {
 	}
 
 	public void setLoser(String uniquePlayerID) {
-		getPlayer(uniquePlayerID).setPlayerState(EPlayerGameState.Lost);
-		getOtherPlayer(uniquePlayerID).setPlayerState(EPlayerGameState.Won);
+		Player winner = getOtherPlayer(uniquePlayerID);
+		winner.setPlayerState(EPlayerGameState.Won);
+
+		Player loser = getPlayer(uniquePlayerID);
+		loser.setPlayerState(EPlayerGameState.Lost);
+		logger.info("game: " + getGameID() + " has concluded, Winner: " + winner.getPlayerID() + ", Loser: "
+				+ loser.getPlayerID());
 		data.setEndOfGame();
 	}
 

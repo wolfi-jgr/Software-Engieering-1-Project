@@ -1,12 +1,8 @@
 package server.player;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import messagesbase.messagesfromclient.PlayerRegistration;
 import messagesbase.messagesfromserver.EPlayerGameState;
 import messagesbase.messagesfromserver.FullMap;
-import server.main.ServerEndpoints;
 
 public class Player {
 
@@ -17,8 +13,6 @@ public class Player {
 	private boolean sentHalfMapFlag = false;
 	private FullMap convertedHalfMap = new FullMap();
 	private FullMap fullMap = new FullMap();
-	
-	private final static Logger logger = LoggerFactory.getLogger(Player.class);
 
 	public Player(String uniquePlayerID, PlayerRegistration playerRegistration) {
 

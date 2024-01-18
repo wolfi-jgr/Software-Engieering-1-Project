@@ -2,7 +2,9 @@ package server.rules;
 
 import java.util.Set;
 
-import messagesbase.messagesfromclient.ETerrain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromclient.PlayerHalfMapNode;
 import server.eachgame.Game;
@@ -10,6 +12,8 @@ import server.exceptions.HalfMapDimensionException;
 import server.player.Player;
 
 public class DimensionsOfHalfMap implements IRule {
+	
+	private final static Logger logger = LoggerFactory.getLogger(DimensionsOfHalfMap.class);
 
 	@Override
 	public void validateNewGame() {
@@ -37,6 +41,7 @@ public class DimensionsOfHalfMap implements IRule {
 					}
 				}
 				if (found != 1) {
+					logger.error("The player: " + playerHalfMap.getUniquePlayerID() + " has sent a HalfMap with the wrong dimensions.");
 					throw new HalfMapDimensionException(playerHalfMap.getUniquePlayerID());
 				}
 			}
