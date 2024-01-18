@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Random;
 import java.util.Set;
 
@@ -18,6 +22,7 @@ import messagesbase.messagesfromserver.FullMap;
 import messagesbase.messagesfromserver.FullMapNode;
 import messagesbase.messagesfromserver.GameState;
 import server.exceptions.GenericExampleException;
+import server.main.ServerEndpoints;
 import server.player.Player;
 
 public class Game {
@@ -29,6 +34,8 @@ public class Game {
 
 	private GameData data = new GameData();
 	private Player playerToAct;
+	
+	private final static Logger logger = LoggerFactory.getLogger(Game.class);
 
 	public Game() {
 		data.setGameID(getRandomGameID());
@@ -224,7 +231,7 @@ public class Game {
 		return mapToReturn;
 	}
 
-	private Player getPlayer(String uniquePlayerID) {
+	public Player getPlayer(String uniquePlayerID) {
 
 		for (Player eachPlayer : getPlayers()) {
 			if (eachPlayer.getPlayerID().equals(uniquePlayerID)) {
@@ -260,5 +267,13 @@ public class Game {
 
 	public boolean isFinished() {
 		return data.isGameFinished();
+	}
+
+	public boolean bothPlayersRegistered() {
+		return getPlayerCount() == 2;
+	}
+
+	public boolean bothPlayersSentHalfMaps() {
+		return getHalfMapCount() == 2;
 	}
 }

@@ -12,7 +12,7 @@ public interface IRule {
 	public void validateNewGame();
 	public void validatePlayerRegistration(Set<Player> players);
 	public void validateHalfMap(PlayerHalfMap playerHalfMap, Game game);
-	public void validateState();
+	public void validateState(Set<Player> players, String gameID);
 	
 	
 

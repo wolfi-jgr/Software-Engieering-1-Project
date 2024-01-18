@@ -6,10 +6,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import messagesbase.messagesfromserver.FullMap;
 import messagesbase.messagesfromserver.GameState;
 import server.exceptions.GenericExampleException;
+import server.main.ServerEndpoints;
 import server.player.Player;
 
 public class GameData {
@@ -22,6 +26,7 @@ public class GameData {
 	private String gameStateID = UUID.randomUUID().toString();
 	private boolean changed = false;
 	private boolean hasGameEnded = false;
+	private final static Logger logger = LoggerFactory.getLogger(GameData.class);
 
 	public GameState getGameState() {
 

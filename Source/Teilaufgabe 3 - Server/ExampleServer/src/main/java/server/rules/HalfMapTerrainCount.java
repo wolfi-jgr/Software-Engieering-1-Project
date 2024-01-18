@@ -75,7 +75,7 @@ public class HalfMapTerrainCount implements IRule {
 	}
 
 	@Override
-	public void validateState() {
+	public void validateState(Set<Player> players, String gameID) {
 		// TODO Auto-generated method stub
 
 	}

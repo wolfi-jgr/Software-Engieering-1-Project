@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import messagesbase.UniqueGameIdentifier;
 import messagesbase.UniquePlayerIdentifier;
 import messagesbase.messagesfromclient.PlayerHalfMap;
@@ -17,18 +20,30 @@ import messagesbase.messagesfromserver.GameState;
 import messagesbase.messagesfromserver.PlayerState;
 import server.eachgame.Game;
 import server.exceptions.GenericExampleException;
+import server.main.ServerEndpoints;
 import server.player.Player;
+import server.rules.CastleAmountAndLocation;
+import server.rules.CoordinatesWithinBounds;
+import server.rules.DimensionsOfHalfMap;
 import server.rules.HalfMapHas50Fields;
 import server.rules.HalfMapTerrainCount;
 import server.rules.IRule;
 import server.rules.Max2PlayersPerGame;
+import server.rules.WaitOrActRule;
+import server.rules.WaterOnEdgesCount;
 
 public class Gamemaster {
 	private Map<String, Game> games = new HashMap<String, Game>();
 	private List<String> listOfGameIDs = new ArrayList<String>();
-	private List<IRule> rulesForHalfMap = new ArrayList<IRule>(Arrays.asList(new HalfMapHas50Fields(), new HalfMapTerrainCount()));
+
+	private List<IRule> rulesForHalfMap = new ArrayList<IRule>(Arrays.asList(new HalfMapHas50Fields(),
+			new HalfMapTerrainCount(), new CastleAmountAndLocation(), new DimensionsOfHalfMap(),
+			new WaterOnEdgesCount(), new CoordinatesWithinBounds(), new WaitOrActRule()));
 	private List<IRule> rulesForPlayers = new ArrayList<IRule>(Arrays.asList(new Max2PlayersPerGame()));
+
 	private int MAX_NUMBER_OF_GAMES = 99;
+
+	private final static Logger logger = LoggerFactory.getLogger(Gamemaster.class);
 
 	private void checkGameID(UniqueGameIdentifier gameID) {
 		if (gameID.getUniqueGameID().equals(null) || gameID.equals(new UniqueGameIdentifier())) {
@@ -94,7 +109,7 @@ public class Gamemaster {
 		checkHalfMap(halfmap, rulesForHalfMap, getGame(gameID.getUniqueGameID()));
 		saveHalfMap(gameID, halfmap);
 
-		setRandomPlayerToActFirst(gameID);
+		getGame(gameID.getUniqueGameID()).setNextPlayerToAct();
 		checkIfBothPlayersSentHalfMaps(gameID);
 	}
 
@@ -114,18 +129,14 @@ public class Gamemaster {
 
 	private void checkIfBothPlayersSentHalfMaps(UniqueGameIdentifier gameID) {
 		Game gameToCheck = getGame(gameID.getUniqueGameID());
-		if (gameToCheck.getHalfMapCount() == 2) {
+		if (gameToCheck.bothPlayersSentHalfMaps()) {
 			gameToCheck.mergeHalfMaps();
 		}
 	}
 
-	private void setRandomPlayerToActFirst(UniqueGameIdentifier gameID) {
-		getGame(gameID.getUniqueGameID()).setNextPlayerToAct();
-	}
-
 	private void checkIfBothPlayersRegistered(UniqueGameIdentifier gameID) {
 		Game gameToCheck = getGame(gameID.getUniqueGameID());
-		if (gameToCheck.getPlayerCount() == 2) {
+		if (gameToCheck.bothPlayersRegistered()) {
 			return;
 		}
 		throw new GenericExampleException("NotBothPlayersRegistered",
@@ -160,6 +171,7 @@ public class Gamemaster {
 	public GameState handleStateRequest(UniqueGameIdentifier gameID, String uniquePlayerID) {
 		checkGameID(gameID);
 		checkPlayerID(gameID, uniquePlayerID);
+
 		Game gameToHandle = games.get(gameID.getUniqueGameID());
 		GameState gameState = getGameStateForPlayer(gameToHandle, uniquePlayerID);
 		return gameState;
