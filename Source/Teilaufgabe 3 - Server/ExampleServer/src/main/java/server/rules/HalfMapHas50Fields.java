@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import messagesbase.messagesfromclient.PlayerHalfMap;
 import server.eachgame.Game;
-import server.exceptions.GenericExampleException;
 import server.exceptions.HalfMaphasNot50FieldsException;
 import server.player.Player;
 
